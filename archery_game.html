@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>활 쏘기 게임</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        #gameArea {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            display: none;
+        }
+
+        .target {
+            position: absolute;
+            background-color: red;
+            border-radius: 50%;
+        }
+
+        #gauge {
+            width: 100px;
+            height: 10px;
+            background-color: #eee;
+            margin-top: 10px;
+        }
+
+        #gaugeFill {
+            width: 0%;
+            height: 100%;
+            background-color: green;
+        }
+
+        #scoreDisplay {
+            font-size: 20px;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+        }
+
+        #startButton {
+            font-size: 20px;
+            padding: 10px 20px;
+            margin: 5px;
+        }
+
+        #mainTitle {
+            font-size: 120px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #mainTitleText {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="mainTitle">
+        <span id="mainTitleText">활 쏘기 게임</span>
+        <button id="startButton">게임 시작</button>
+    </div>
+    <div id="gameArea">
+        <div id="scoreDisplay">점수: <span id="score">0</span></div>
+    </div>
+    <div id="timer" style="display:none;">타이머: <span id="timerValue">60</span></div>
+    <div id="gauge">
+        <div id="gaugeFill"></div>
+    </div>
+    
+    <script>
+        const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timerValue');
+        const gaugeFill = document.getElementById('gaugeFill');
+        const startButton = document.getElementById('startButton');
+        const gameArea = document.getElementById('gameArea');
+        const mainTitleText = document.getElementById('mainTitleText');
+        let score = 0;
+        let timer = 60;
+        let isReloaded = false;
+        let gameInterval;
+        let reloadTimeout;
+
+        function createTarget() {
+            const target = document.createElement('div');
+            target.className = 'target';
+
+            // 랜덤 크기 설정 (15px ~ 50px)
+            const size = Math.random() * (50 - 15) + 15; 
+            target.style.width = `${size}px`;
+            target.style.height = `${size}px`;
+
+            moveTarget(target);
+            gameArea.appendChild(target);
+
+            target.addEventListener('click', () => {
+                if (!isReloaded) {
+                    alert("활을 장전하세요!");
+                    return;
+                }
+
+                if (target.style.backgroundColor === 'red') {
+                    score++;
+                    scoreDisplay.textContent = score; // 실시간으로 스코어 업데이트
+                    target.style.backgroundColor = 'green';
+                    setTimeout(() => {
+                        target.remove();
+                        createTarget(); // 새로운 표적 생성
+                    }, 500);
+                } else {
+                    alert("표적을 놓쳤습니다!");
+                }
+
+                isReloaded = false;
+                gaugeFill.style.width = '0%';
+            });
+        }
+
+        function moveTarget(target) {
+            const areaWidth = gameArea.clientWidth;
+            const areaHeight = gameArea.clientHeight;
+            const x = Math.random() * (areaWidth - target.clientWidth);
+            const y = Math.random() * (areaHeight - target.clientHeight);
+            target.style.left = `${x}px`;
+            target.style.top = `${y}px`;
+        }
+
+        function generateTargets(count) {
+            for (let i = 0; i < count; i++) {
+                createTarget();
+            }
+        }
+
+        document.addEventListener('mousedown', () => {
+            if (!isReloaded) {
+                let reloadProgress = 0;
+                gaugeFill.style.width = '0%';
+                reloadTimeout = setInterval(() => {
+                    reloadProgress += 20;
+                    gaugeFill.style.width = `${reloadProgress}%`;
+
+                    if (reloadProgress >= 100) {
+                        clearInterval(reloadTimeout);
+                        isReloaded = true;
+                        const targets = document.querySelectorAll('.target');
+                        targets.forEach(target => {
+                            target.style.backgroundColor = 'red';
+                        });
+                    }
+                }, 100);
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            clearInterval(reloadTimeout);
+        });
+
+        function startTimer() {
+            gameInterval = setInterval(() => {
+                timer--;
+                timerDisplay.textContent = timer;
+
+                if (timer <= 0) {
+                    clearInterval(gameInterval);
+                    alert(`게임 종료! 최종 점수: ${score}`);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            gameArea.style.display = 'none';
+            document.getElementById('timer').style.display = 'none';
+            startButton.style.display = 'block';
+            mainTitleText.style.display = 'block';
+            score = 0;
+            scoreDisplay.textContent = score; // 게임 종료 후 스코어 초기화
+        }
+
+        function resetGame() {
+            score = 0;
+            timer = 60;
+            isReloaded = false;
+            scoreDisplay.textContent = score; // 초기 스코어 설정
+            gameArea.style.display = 'block';
+            document.getElementById('timer').style.display = 'block';
+            timerDisplay.textContent = timer;
+            startTimer();
+            generateTargets(5);
+            startButton.style.display = 'none';
+            mainTitleText.style.display = 'none';
+            gaugeFill.style.width = '0%';
+        }
+
+        startButton.addEventListener('click', resetGame);
+    </script>
+</body>
+</html>

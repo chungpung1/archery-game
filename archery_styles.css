@@ -1,0 +1,35 @@
+#gameArea {
+    position: relative;
+    width: 100%;
+    height: 500px; /* 게임 영역의 높이 */
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+}
+
+.target {
+    position: absolute;
+    width: 25px; /* 표적 크기 */
+    height: 25px; /* 표적 크기 */
+    background-color: red;
+    border-radius: 50%;
+}
+
+#bow {
+    position: absolute;
+    width: 30px; /* 활 크기 */
+    height: 30px; /* 활 크기 */
+    background-color: brown; /* 활 색상 */
+    border-radius: 5px;
+}
+
+#gauge {
+    width: 100px;
+    height: 10px;
+    background-color: #eee;
+}
+
+#gaugeFill {
+    width: 0%;
+    height: 100%;
+    background-color: green;
+}
